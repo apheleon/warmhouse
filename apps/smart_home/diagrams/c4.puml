@@ -1,0 +1,20 @@
+@startuml
+!define C4Container https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+!includeurl C4Container
+' внешние сущности
+Person(customer, "Покупатель", "Управляет датчиками, снимает показания")
+
+' контейнеры системы
+System_Boundary(system, "Domain: Sensors") {
+  Container(webApp, "Веб-приложение", "Vue", "Интерфейс для управления, мониторинга")
+  Container(api, "API", "Go", "Обрабатывает запросы от клиентов")
+  ContainerDb(database, "База данных", "PostgreSQL", "Хранит информацию о датчиках")
+  Container(temperatureService, "Сервис мониторинга температуры", "Go", "Возвращает показания с датчиков температуры")
+}
+
+' потоки данных
+Rel(customer, webApp, "Использует для управления")
+Rel(webApp, api, "Обрабатывает запросы")
+Rel(api, database, "Запросы к базе данных")
+Rel(api, temperatureService, "Чтение показаний")
+@enduml
