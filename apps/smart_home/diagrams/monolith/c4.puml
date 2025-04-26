@@ -1,4 +1,4 @@
-@startuml
+@startuml monolith
 !define C4Container https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
 !includeurl C4Container
 ' внешние сущности
