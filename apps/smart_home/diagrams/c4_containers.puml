@@ -7,26 +7,25 @@ LAYOUT_TOP_DOWN()
 title Warmhouse container diagram
 
 ' внешние сущности
-together{
-    Person(customer, "Клиент", "Управляет умным домом")
-    System(warmHouseWebApp, "Веб-приложение", "Vue")
-}
 
-System_Ext(network, "Сеть", "WIFI1")
 
 ' контейнеры системы
 
 together{
     System_Boundary(customerHouse1, "Дом пользователя") {
-        Container(mobileApp, "Мобильное приложение", "Vue", "Интерфейс для управления")
-        Container(device1, "Датчик температуры", "wifi")
-        Container(device2, "Датчик присутствия", "bluetooth")
-        Container(device3, "Датчик движения", "zigbee")
-        Container(deviceN, "Освещение", "matter")
+        Person(customer, "Клиент", "Управляет умным домом")
+        System_Ext(device1, "Датчик температуры", "wifi")
+        System_Ext(device2, "Датчик присутствия", "bluetooth")
+        System_Ext(device3, "Датчик движения", "zigbee")
+        System_Ext(deviceN, "Освещение", "matter")
+        System_Ext(network, "Сеть", "WIFI")
     }
 }
 
 System_Boundary(warmhouse, "Warmhouse") {
+    Container(warmHouseWebApp, "Веб-приложение", "Vue")
+    Container(mobileApp, "Мобильное приложение", "Android", "Интерфейс для управления")
+
     together {
         System_Boundary(backend, "Backend") {
             Container(backendApi, "API", "Go", "запросы от внешних сервисов")
@@ -56,19 +55,20 @@ System_Boundary(warmhouse, "Warmhouse") {
 
 ' потоки данных
 ' дом
-Rel(mobileApp, network, "соединение", "credentials")
-Rel(network, backendApi, "credentials")
 Rel(device1, network, "event")
 Rel(deviceN, network, "event")
-Rel(device2, mobileApp, "event")
+Rel(device2, network, "event")
 Rel(network, deviceManagerApi, "device event", "HTTPS")
 
 ' клиент
-Rel(customer, customerHouse1, "управление")
+Rel(customer, mobileApp, "управление")
 Rel(customer, warmHouseWebApp, "управление", "HTTPS")
 
+' mobile app
+Rel(mobileApp, backendApi, "управление")
+
 ' backend
-Rel(warmHouseWebApp, backendApi, "запрос")
+Rel(warmHouseWebApp, backendApi, "add new device")
 Rel(backendApi, backendDb, "credentials")
 Rel(backendApi, deviceManagerApi, "credentials")
 Rel(backendApi, deviceScriptApi, "сценарий", "async")
@@ -88,7 +88,8 @@ Rel(deviceManagerApi, deviceManagerQueue, "device event")
 Rel(deviceManagerApi, deviceManagerDB, "device events")
 Rel(deviceScriptRunnerQueue, deviceScriptRunnerJob, "job")
 Rel(deviceManagerQueue, deviceScriptApi, "device event")
-Rel(deviceManagerOutQueue, network, "device event")
+Rel(deviceManagerQueue, deviceScriptRunnerApi, "device event")
+Rel(deviceManagerOutQueue, deviceManagerDB, "device event")
 
 
 @enduml

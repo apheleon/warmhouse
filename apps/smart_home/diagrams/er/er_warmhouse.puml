@@ -23,6 +23,7 @@ together{
     entity Room {
         * room_id : integer <<PK>>
         --
+        device_id: integer
         customer_id : integer integer <<FK>>
         house_id: integer integer <<FK>>
         label : string
@@ -38,22 +39,43 @@ together{
         token: string
         customer_id : integer
         label : string
+        state: json
+        type: enum
         deleted: boolean
         createdAt: date
         updatedAt: date
     }
+}
 
-    entity DeviceLocation {
-        * location_id : integer <<PK>>
+entity Scripts {
+        * script_id : integer <<PK>>
         --
-        device_id: integer <<FK>>
-        house_id: integer
-        room_id: integer
+        label: string
+        type: enum
         createdAt: date
         updatedAt: date
-    }
-
 }
+
+entity ScriptEvents {
+        * script_id : integer <<PK>>
+        --
+        device_id: integer
+        state: json
+        step: integer
+        nextStep: integer
+        trigger: json
+        createdAt: date
+        updatedAt: date
+}
+
+entity ScriptRunFlow {
+        * script_id : integer <<PK>>
+        --
+        label: string
+        createdAt: date
+        updatedAt: date
+}
+
 together {
     entity DeviceEvents {
         * event_id : integer <<PK>>
@@ -61,15 +83,16 @@ together {
         device_id: integer
         event : string
         params: json
+        direction: enum
         status: enum
         createdAt: date
         updatedAt: date
     }    
 }
 
+    Customer "1" --> "N" Scripts
     Customer "1" --> "N" House
+    Customer "1" --> "N" Device
     House "1" --> "N" Room
-    House "1" --> "N" Device
-    Device "1" --> "N" DeviceEvents
-    Device "1" --> "1" DeviceLocation
+    Device "1" <--> "N" DeviceEvents
 @enduml

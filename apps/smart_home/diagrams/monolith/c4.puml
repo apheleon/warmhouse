@@ -2,7 +2,7 @@
 !define C4Container https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
 !includeurl C4Container
 ' внешние сущности
-Person(customer, "Покупатель", "Управляет датчиками, снимает показания")
+Person(customer, "Клиент", "Управляет датчиками, снимает показания")
 
 ' контейнеры системы
 System_Boundary(system, "Domain: Sensors") {
