@@ -1,0 +1,75 @@
+@startuml ER_WARMHOUSE
+together{
+    entity Customer {
+        * customer_id : integer <<PK>>
+        --
+        name : string
+        email : string
+        deleted: boolean
+        createdAt: date
+        updatedAt: date
+    }
+
+    entity House {
+        * house_id : integer <<PK>>
+        --
+        customer_id : integer <<FK>>
+        label : string
+        deleted: boolean
+        createdAt: date
+        updatedAt: date
+    }
+
+    entity Room {
+        * room_id : integer <<PK>>
+        --
+        customer_id : integer integer <<FK>>
+        house_id: integer integer <<FK>>
+        label : string
+        email : string
+        deleted: boolean
+        createdAt: date
+        updatedAt: date
+    }
+
+    entity Device {
+        * device_id : integer <<PK>>
+        --
+        token: string
+        customer_id : integer
+        label : string
+        deleted: boolean
+        createdAt: date
+        updatedAt: date
+    }
+
+    entity DeviceLocation {
+        * location_id : integer <<PK>>
+        --
+        device_id: integer <<FK>>
+        house_id: integer
+        room_id: integer
+        createdAt: date
+        updatedAt: date
+    }
+
+}
+together {
+    entity DeviceEvents {
+        * event_id : integer <<PK>>
+        --
+        device_id: integer
+        event : string
+        params: json
+        status: enum
+        createdAt: date
+        updatedAt: date
+    }    
+}
+
+    Customer "1" --> "N" House
+    House "1" --> "N" Room
+    House "1" --> "N" Device
+    Device "1" --> "N" DeviceEvents
+    Device "1" --> "1" DeviceLocation
+@enduml

@@ -1,0 +1,13 @@
+@startuml device-manager-component
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+System_Ext(device, "Устройство", "WIFI")
+
+System_Boundary(deviceManager, "Device manager") {
+    Person(customer, "Клиент", "Управляет умным домом")
+}
+
+@enduml

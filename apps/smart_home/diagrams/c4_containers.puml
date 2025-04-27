@@ -2,7 +2,6 @@
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
 
 SHOW_PERSON_OUTLINE()
-LAYOUT_LEFT_RIGHT()
 LAYOUT_TOP_DOWN()
 
 title Warmhouse container diagram
@@ -13,7 +12,7 @@ together{
     System(warmHouseWebApp, "Веб-приложение", "Vue")
 }
 
-System_Ext(network, "Сеть", "WIFI")
+System_Ext(network, "Сеть", "WIFI1")
 
 ' контейнеры системы
 
@@ -28,31 +27,31 @@ together{
 }
 
 System_Boundary(warmhouse, "Warmhouse") {
-together {
-    System_Boundary(backend, "Backend") {
-        Container(backendApi, "API", "Go", "запросы от внешних сервисов")
-        ContainerDb(backendDb, "База данных", "PostgreSQL", "Пользователей, дома пользователей,...")
-    }
+    together {
+        System_Boundary(backend, "Backend") {
+            Container(backendApi, "API", "Go", "запросы от внешних сервисов")
+            ContainerDb(backendDb, "База данных", "PostgreSQL", "Пользователей, дома пользователей,...")
+        }
     
-    System_Boundary(deviceManager, "Device manager") {
-        Container(deviceManagerApi, "API", "Go", "Обрабатывает события устройств")
-        ContainerQueue(deviceManagerQueue, "Очередь обработки входящих событий устройств", "BullMQ", "Обрабатывает события с устройств")
-        ContainerQueue(deviceManagerOutQueue, "Очередь обработки исходящих событий устройств", "BullMQ", "Обрабатывает события с устройств")
-        ContainerDb(deviceManagerDB, "База данных", "PostgreSQL", "Хранит события")
-    }
+        System_Boundary(deviceManager, "Device manager") {
+            Container(deviceManagerApi, "API", "Go", "Обрабатывает события устройств")
+            ContainerQueue(deviceManagerQueue, "Очередь обработки входящих событий устройств", "BullMQ", "Обрабатывает события с устройств")
+            ContainerQueue(deviceManagerOutQueue, "Очередь обработки исходящих событий устройств", "BullMQ", "Обрабатывает события с устройств")
+            ContainerDb(deviceManagerDB, "База данных", "PostgreSQL", "Хранит события")
+        }
 
-    System_Boundary(deviceScript, "Device script manager") {
-        Container(deviceScriptApi, "API", "Go", "Обрабатывает запросы от клиентов")
-        Container(deviceScriptSheduler, "Сервис планирования", "Go, Cron", "Планирует запуск сценариев")
-        ContainerDb(deviceScriptDB, "База данных", "PostgreSQL", "Хранит сценарии")
-    }
+        System_Boundary(deviceScript, "Device script manager") {
+            Container(deviceScriptApi, "API", "Go", "Обрабатывает запросы от клиентов")
+            Container(deviceScriptSheduler, "Сервис планирования", "Go, Cron", "Планирует запуск сценариев")
+            ContainerDb(deviceScriptDB, "База данных", "PostgreSQL", "Хранит сценарии")
+        }
 
-    System_Boundary(deviceScriptRunner, "Device script runner") {
-        Container(deviceScriptRunnerApi, "API", "Go", "Запускает сценарии")
-        ContainerQueue(deviceScriptRunnerQueue, "Очередь запуска сценариев", "BullMQ", "Выполняет сценарии")
-        Container(deviceScriptRunnerJob, "Обработчик очереди", "Go")
+        System_Boundary(deviceScriptRunner, "Device script runner") {
+            Container(deviceScriptRunnerApi, "API", "Go", "Запускает сценарии")
+            ContainerQueue(deviceScriptRunnerQueue, "Очередь запуска сценариев", "BullMQ", "Выполняет сценарии")
+            Container(deviceScriptRunnerJob, "Обработчик очереди", "Go")
+        }
     }
-}
 }
 
 ' потоки данных
