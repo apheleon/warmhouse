@@ -1,0 +1,56 @@
+@startuml device-manager-component
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+System_Ext(mobileApp, "Мобильное приложение")
+System_Ext(webApp, "Веб приложение")
+
+System_Ext(device1, "Датчик температуры", "wifi")
+System_Ext(device2, "Датчик присутствия", "bluetooth")
+
+System_Ext(db, "DB")
+
+System_Ext(deviceScriptManager, "Devce script manager")
+System_Ext(deviceScriptRunner, "Devce script runner")
+
+System_Boundary(deviceManager, "Device manager") {
+    Container(loadBalancer, "балансировщик", "Nginx", "масштабируемость, надежность и производительность")
+    Container(rateLimire, "API Rate Limiter", "Nginx, Cloudflare", "ограничиваем возможность спама событиями")
+
+    Container(authController, "Авторизация устройства", "Go", "проверяем credentials")
+
+    Container(registerController, "Регистрация устройства", "Go", "возвращает device token")
+
+    Container(inQueue, "Входящая очередь", "Kafka", "входящая очередь событий")
+    Container(outQueue, "Исходящая очередь", "Kafka", "исходящая очередь событий")
+
+    Container(eventProcessController, "Обработка события", "Go", "решает как обрабатывать событие, зависит от типа устройства, статуса и тд.")
+
+}
+
+
+Rel(mobileApp, loadBalancer, "request")
+Rel(webApp, loadBalancer, "request")
+Rel(device1, loadBalancer, "device event")
+Rel(device2, loadBalancer, "device event")
+
+
+Rel(loadBalancer, rateLimire, "request")
+Rel(rateLimire, authController, "request")
+
+Rel(rateLimire, registerController, "request")
+
+Rel(registerController, db, "device token")
+Rel(eventProcessController, db, "device event")
+Rel(eventProcessController, inQueue, "device event")
+Rel(inQueue, deviceScriptManager, "device event")
+
+Rel(authController, eventProcessController, "devce event")
+
+Rel(deviceScriptRunner, outQueue, "device event")
+
+Rel(outQueue, loadBalancer, "device event")
+
+@enduml
