@@ -22,7 +22,14 @@ services:
       - smarthome-network
     
   temperature-api:
-    image: warmhouse:latest
+    build:
+      context: ./warmhouse/services/temperature-api
+      dockerfile: Dockerfile
+    container_name: warmhouse-app
+    environment:
+      ENDPOINT: temperature-api:8081
+    ports:
+      - "8081:8081"
     networks:
       - smarthome-network
 
