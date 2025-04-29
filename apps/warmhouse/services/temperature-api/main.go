@@ -45,6 +45,21 @@ func main() {
 		})
 	})
 
+	router.GET("/temperature/:id", func(c *gin.Context) {
+		id := c.DefaultQuery("location", "default")
+
+		if id == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "ID is required"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"value":     -50 + rand.Float64()*100,
+			"status":    "ok",
+			"timestamp": time.Now(),
+		})
+	})
+
 	srv := &http.Server{
 		Addr:    getEnv("ENDPOINT", ":8081"),
 		Handler: router,
