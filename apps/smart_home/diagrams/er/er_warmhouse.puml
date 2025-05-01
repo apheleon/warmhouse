@@ -1,79 +1,96 @@
 @startuml ER_WARMHOUSE
+
 together{
     entity Customer {
         * customer_id : integer <<PK>>
         --
+        guid: uuid
         name : string
         email : string
         deleted: boolean
-        createdAt: date
-        updatedAt: date
+        --
+        created_at: date
+        updated_at: date
     }
 
     entity House {
         * house_id : integer <<PK>>
+        * customer_id : integer <<FK>>
         --
-        customer_id : integer <<FK>>
         label : string
         deleted: boolean
-        createdAt: date
-        updatedAt: date
+        --
+        created_at: date
+        updated_at: date
     }
 
     entity Room {
         * room_id : integer <<PK>>
+        * customer_id : integer integer <<FK>>
+        * house_id: integer integer <<FK>>
         --
         device_id: integer
-        customer_id : integer integer <<FK>>
-        house_id: integer integer <<FK>>
         label : string
         email : string
         deleted: boolean
-        createdAt: date
-        updatedAt: date
+        --
+        created_at: date
+        updated_at: date
     }
 
     entity Device {
         * device_id : integer <<PK>>
         --
-        token: string
+        deviceToken: string
         customer_id : integer
         label : string
         state: json
         type: enum
         deleted: boolean
-        createdAt: date
-        updatedAt: date
+        --
+        created_at: date
+        updated_at: date
     }
 }
 
-entity Scripts {
+together{
+    entity Scripts {
         * script_id : integer <<PK>>
+        * customer_id: integer <<FK>>
         --
         label: string
         type: enum
-        createdAt: date
-        updatedAt: date
-}
+        status: enum
+        --
+        created_at: date
+        updated_at: date
+    }
 
-entity ScriptEvents {
-        * script_id : integer <<PK>>
+    entity ScriptEvents {
+        * script_event_id : integer <<PK>>
+        * script_id : integer <<FK>>
         --
         device_id: integer
+        type: enum
         state: json
         step: integer
         nextStep: integer
         trigger: json
-        createdAt: date
-        updatedAt: date
-}
+        --
+        created_at: date
+        updated_at: date
+    }
 
-entity ScriptRunFlow {
+    entity ScriptRunFlow {
         * script_id : integer <<PK>>
         --
-        label: string
-        createdAt: date
-        updatedAt: date
+        currentStep: integer
+        nextStep: integer
+        status: enum
+        --
+        created_at: date
+        updated_at: date
+    }
 }
 
 together {
@@ -85,8 +102,9 @@ together {
         params: json
         direction: enum
         status: enum
-        createdAt: date
-        updatedAt: date
+        --
+        created_at: date
+        updated_at: date
     }    
 }
 
@@ -95,4 +113,6 @@ together {
     Customer "1" --> "N" Device
     House "1" --> "N" Room
     Device "1" <--> "N" DeviceEvents
+    Scripts "1" --> "N" ScriptEvents
+    Scripts "1" --> "1" ScriptRunFlow
 @enduml
