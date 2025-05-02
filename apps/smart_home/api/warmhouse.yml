@@ -12,6 +12,8 @@ paths:
   /health:
     get:
       summary: "service health check"
+      tags:
+        - device manager
       responses:
         '200':
           description: "service is online"
@@ -36,6 +38,8 @@ paths:
   /device-auth:
     post:
       summary: "Авторизация клиентского устройства"
+      tags:
+        - device manager
       security:
         - BearerAuth: []
       requestBody:
@@ -61,6 +65,8 @@ paths:
   /device-register:
     post:
       summary: Регистрация нового устройства пользователя
+      tags:
+        - device manager
       security:
         - BearerAuth: []
       requestBody:
@@ -92,6 +98,8 @@ paths:
   /device-event-handler:
     post:
       summary: Обработка события с устройства
+      tags:
+        - device manager
       security:
         - BearerAuth: []
       requestBody:
@@ -161,6 +169,8 @@ paths:
       summary: Удаление устройства
       security:
         - BearerAuth: []
+      tags:
+        - device manager
       requestBody:
         required: true
         content:

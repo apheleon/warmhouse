@@ -29,9 +29,20 @@ together{
         * customer_id : integer integer <<FK>>
         * house_id: integer integer <<FK>>
         --
+        label : string
+        deleted: boolean
+        --
+        created_at: date
+        updated_at: date
+    }
+
+    entity DeviceLocation {
+        * location_id: integer <<PK>>
+        * house_id: integer integer <<FK>>
+        * room_id : integer
+        --
         device_id: integer
         label : string
-        email : string
         deleted: boolean
         --
         created_at: date
@@ -115,4 +126,8 @@ together {
     Device "1" <--> "N" DeviceEvents
     Scripts "1" --> "N" ScriptEvents
     Scripts "1" --> "1" ScriptRunFlow
+
+    Device "1" <--> "1" DeviceLocation
+    Room "1" <--> "N" DeviceLocation
+    House "1" <--> "N" DeviceLocation
 @enduml
