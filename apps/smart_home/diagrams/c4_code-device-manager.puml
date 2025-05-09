@@ -1,0 +1,82 @@
+@startuml Device Script Manager - Code diagram
+
+class Script {
+  - script_id: int
+  - customer_id: int
+  - events: List<ScriptEvent>
+  - status: ScriptStatus
+  + addScript(label: string, type: ScriptTypes): int
+  + addEvent(event: Event): void
+  + processScript(script_id: int): void
+  + deleteScript(script_id: int): void
+}
+
+class ScriptScheduler {
+  - script_id: int
+  - events: List<ScriptEvent>
+  + buildEventSequence(events: List<ScriptEvent>): List<EventSequence>
+  + run(): void
+}
+
+class ScriptEvent {
+    - script_id: int
+    - event_id: int
+    - device_id: int
+    - type: ScriptType
+    - state: json
+    - step: int
+    - nextStep: int
+    - trigger: json
+}
+
+class EventSequence {
+    - event_id: int
+    - step: int
+    - nextStep: int
+}
+
+enum ScriptStatus {
+  DELETED
+  INPROCESS
+  DISABLED
+}
+
+enum ScriptType {
+  PLAY_BY_VALUE
+  PLAY_BY_TIME
+}
+
+enum EventType {
+  IMMEDIATELY
+  DELAYED
+}
+
+class ScriptRepository {
+  + getScripts(device_id: int): List<Script>
+  + findById(id: String): Order
+}
+
+interface DeviceScriptRunnerInterface {
+  + run(events: List<ScriptEvent>): boolean
+}
+
+interface DeviceManagerInterface {
+}
+
+interface BackendInterface {
+}
+
+Script "1" --> "1" ScriptStatus : has
+Script "1" --> "1" ScriptType : has
+Script "1" --> "1" ScriptEvent : has
+ScriptEvent "1" --> "N" EventType : has
+
+ScriptScheduler ..> ScriptEvent: uses
+ScriptScheduler "1" --> DeviceScriptRunnerInterface: deligates run to
+ScriptScheduler "1" --> "1" ScriptRepository
+ScriptScheduler "1" --> "1" EventSequence : has
+
+DeviceManagerInterface "1" --> "1" Script : send
+BackendInterface "1" --> "1" Script : send
+
+@enduml

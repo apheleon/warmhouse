@@ -1,0 +1,95 @@
+@startuml sprint1
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+
+SHOW_PERSON_OUTLINE()
+LAYOUT_TOP_DOWN()
+
+title Warmhouse container diagram
+
+' внешние сущности
+
+
+' контейнеры системы
+
+together{
+    System_Boundary(customerHouse1, "Дом пользователя") {
+        Person(customer, "Клиент", "Управляет умным домом")
+        System_Ext(device1, "Датчик температуры", "wifi")
+        System_Ext(device2, "Датчик присутствия", "bluetooth")
+        System_Ext(device3, "Датчик движения", "zigbee")
+        System_Ext(deviceN, "Освещение", "matter")
+        System_Ext(network, "Сеть", "WIFI")
+    }
+}
+
+System_Boundary(warmhouse, "Warmhouse") {
+    Container(warmHouseWebApp, "Веб-приложение", "Vue")
+    Container(mobileApp, "Мобильное приложение", "Android", "Интерфейс для управления")
+
+    together {
+        System_Boundary(backend, "Backend") {
+            Container(backendApi, "API", "Go", "запросы от внешних сервисов")
+            ContainerDb(backendDb, "База данных", "PostgreSQL", "Пользователей, дома пользователей,...")
+        }
+    
+        System_Boundary(deviceManager, "Device manager") {
+            Container(deviceManagerApi, "API", "Go", "Обрабатывает события устройств")
+            ContainerQueue(deviceManagerQueue, "Очередь обработки входящих событий устройств", "BullMQ", "Обрабатывает события с устройств")
+            ContainerQueue(deviceManagerOutQueue, "Очередь обработки исходящих событий устройств", "BullMQ", "Обрабатывает события с устройств")
+            ContainerDb(deviceManagerDB, "База данных", "PostgreSQL", "Хранит события")
+        }
+
+        System_Boundary(deviceScript, "Device script manager") {
+            Container(deviceScriptApi, "API", "Go", "Обрабатывает запросы от клиентов")
+            Container(deviceScriptSheduler, "Сервис планирования", "Go, Cron", "Планирует запуск сценариев")
+            ContainerDb(deviceScriptDB, "База данных", "PostgreSQL", "Хранит сценарии")
+        }
+
+        System_Boundary(deviceScriptRunner, "Device script runner") {
+            Container(deviceScriptRunnerApi, "API", "Go", "Запускает сценарии")
+            ContainerQueue(deviceScriptRunnerQueue, "Очередь запуска сценариев", "BullMQ", "Выполняет сценарии")
+            Container(deviceScriptRunnerJob, "Обработчик очереди", "Go")
+        }
+    }
+}
+
+' потоки данных
+' дом
+Rel(device1, network, "event")
+Rel(deviceN, network, "event")
+Rel(device2, network, "event")
+Rel(network, deviceManagerApi, "device event", "HTTPS")
+
+' клиент
+Rel(customer, mobileApp, "управление")
+Rel(customer, warmHouseWebApp, "управление", "HTTPS")
+
+' mobile app
+Rel(mobileApp, backendApi, "управление")
+
+' backend
+Rel(warmHouseWebApp, backendApi, "add new device")
+Rel(backendApi, backendDb, "credentials")
+Rel(backendApi, deviceManagerApi, "credentials")
+Rel(backendApi, deviceScriptApi, "сценарий", "async")
+
+' script
+Rel(deviceScriptApi, deviceScriptDB, "запрос")
+Rel(deviceScriptSheduler, deviceScriptDB, "запрос")
+Rel(deviceScriptSheduler, deviceScriptRunnerApi, "device events")
+
+' runner
+Rel(deviceScriptRunnerApi, deviceScriptRunnerQueue, "сценарий")
+Rel(deviceScriptRunnerJob, deviceManagerOutQueue, "device event")
+
+
+' device manager
+Rel(deviceManagerApi, deviceManagerQueue, "device event")
+Rel(deviceManagerApi, deviceManagerDB, "device events")
+Rel(deviceScriptRunnerQueue, deviceScriptRunnerJob, "job")
+Rel(deviceManagerQueue, deviceScriptApi, "device event")
+Rel(deviceManagerQueue, deviceScriptRunnerApi, "device event")
+Rel(deviceManagerOutQueue, deviceManagerDB, "device event")
+
+
+@enduml

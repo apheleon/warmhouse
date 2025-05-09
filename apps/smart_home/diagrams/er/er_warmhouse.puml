@@ -1,0 +1,133 @@
+@startuml ER_WARMHOUSE
+
+together{
+    entity Customer {
+        * customer_id : integer <<PK>>
+        --
+        guid: uuid
+        name : string
+        email : string
+        deleted: boolean
+        --
+        created_at: date
+        updated_at: date
+    }
+
+    entity House {
+        * house_id : integer <<PK>>
+        * customer_id : integer <<FK>>
+        --
+        label : string
+        deleted: boolean
+        --
+        created_at: date
+        updated_at: date
+    }
+
+    entity Room {
+        * room_id : integer <<PK>>
+        * customer_id : integer integer <<FK>>
+        * house_id: integer integer <<FK>>
+        --
+        label : string
+        deleted: boolean
+        --
+        created_at: date
+        updated_at: date
+    }
+
+    entity DeviceLocation {
+        * location_id: integer <<PK>>
+        * house_id: integer integer <<FK>>
+        * room_id : integer
+        --
+        device_id: integer
+        label : string
+        deleted: boolean
+        --
+        created_at: date
+        updated_at: date
+    }
+
+    entity Device {
+        * device_id : integer <<PK>>
+        --
+        deviceToken: string
+        customer_id : integer
+        label : string
+        state: json
+        type: enum
+        deleted: boolean
+        --
+        created_at: date
+        updated_at: date
+    }
+}
+
+together{
+    entity Scripts {
+        * script_id : integer <<PK>>
+        * customer_id: integer <<FK>>
+        --
+        label: string
+        type: enum
+        status: enum
+        --
+        created_at: date
+        updated_at: date
+    }
+
+    entity ScriptEvents {
+        * script_event_id : integer <<PK>>
+        * script_id : integer <<FK>>
+        --
+        device_id: integer
+        type: enum
+        state: json
+        step: integer
+        nextStep: integer
+        trigger: json
+        --
+        created_at: date
+        updated_at: date
+    }
+
+    entity ScriptRunFlow {
+        * script_id : integer <<PK>>
+        --
+        currentStep: integer
+        nextStep: integer
+        status: enum
+        --
+        created_at: date
+        updated_at: date
+    }
+}
+
+together {
+    entity DeviceEvents {
+        * event_id : integer <<PK>>
+        --
+        device_id: integer
+        event : string
+        params: json
+        direction: enum
+        status: enum
+        --
+        created_at: date
+        updated_at: date
+    }    
+}
+
+    Customer "1" --> "N" Scripts
+    Customer "1" --> "N" House
+    Customer "1" --> "N" Device
+    House "1" --> "N" Room
+    Device "1" <--> "N" DeviceEvents
+    Scripts "1" --> "N" ScriptEvents
+    Scripts "1" --> "1" ScriptRunFlow
+
+    Device "1" <--> "1" DeviceLocation
+    Room "1" <--> "N" DeviceLocation
+    House "1" <--> "N" DeviceLocation
+@enduml

@@ -1,0 +1,18 @@
+@startuml monolith
+!define C4Container https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/refs/heads/master/C4_Container.puml
+!includeurl C4Container
+' внешние сущности
+Person(customer, "Клиент", "Добавляет датчики, считывает температуру")
+
+System(system, "Warmhouse", "monolith")
+
+together{
+  System_Ext(sensor1, "Датчик температуры", "Living room")
+  System_Ext(sensor2, "Датчик температуры", "Bath room")
+}
+
+' потоки
+Rel(customer, system, "добавляет датчики, считывает показания")
+Rel(sensor1, system, "показания")
+Rel(sensor2, system, "показания")
+@enduml

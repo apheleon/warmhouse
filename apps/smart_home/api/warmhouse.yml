@@ -1,0 +1,238 @@
+openapi: '3.0.3'
+info:
+  title: Device manager API
+  description: | 
+    - Регистрация, авторизация устройств, обработка входящих и исходящих событий
+    - Некоторые методы
+    
+  version: '25.05.1'
+servers:
+  - url: http://localhost:8080/v1
+paths:
+  /health:
+    get:
+      summary: "service health check"
+      tags:
+        - device manager
+      responses:
+        '200':
+          description: "service is online"
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "ok"
+        '500':
+          description: service is not healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Internal service error"
+  /device-auth:
+    post:
+      summary: "Авторизация клиентского устройства"
+      tags:
+        - device manager
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceToken:
+                 type: string
+                 format: uuid
+                 example: 123e4567-e89b-12d3-a456-426614174000
+              required:
+                - deviceToken
+      responses:
+        '200':
+          $ref: '#/components/responses/DeviceAuthorized' 
+        '500': 
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/UnAuthorized'
+  /device-register:
+    post:
+      summary: Регистрация нового устройства пользователя
+      tags:
+        - device manager
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerId:
+                  type: string
+                  format: uuid
+                  example: "123e4567-e89b-12d3-a456-426614174000"
+                  description: Уникальный GUID пользователя
+                deviceId:
+                  type: string
+                  example: "35-209900-176148-1"
+                  description: Уникальный ID устройства выданный производителем. Например IMEI
+              required:
+                - customerId
+                - deviceId
+      responses:
+        '200':
+          $ref: '#/components/responses/DeviceRegistered'  
+        '500': 
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/UnAuthorized'
+  /device-event-handler:
+    post:
+      summary: Обработка события с устройства
+      tags:
+        - device manager
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceToken: 
+                  type: string
+                  format: uuid
+                  example: 123e4567-e89b-12d3-a456-426614174000
+                event:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      enum: [newValue, healthCheck, commandDone]
+                      example: healthCheck
+                      description: |
+                        некоторые события 
+                        - **`newValue`**: новое значение.  
+                        - **`healthCheck`**: проверка показателей и получение заданий.  
+                        - **`commandDone`**: команда исполнена.  
+                    data:
+                      type: object
+                      description: event data в формате устройства
+              required:
+                - deviceToken
+                - event             
+      responses:
+        '200':
+          description: Событие обработано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, error, pending]
+                    example: pending
+                    description: |
+                      некоторые статусы 
+                      - **`ok`**: выполнено.  
+                      - **`error`**: ошибка.  
+                      - **`pending`**: событие обрабатывается.  
+                  event:
+                    description: событие для исполнения на устройстве в формате устройства
+                    type: object
+                    properties:
+                      command:
+                        type: string
+                        example: on
+                      params: 
+                        type: object
+                        description: параметры
+                required:
+                - status 
+        '500': 
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/UnAuthorized'    
+  /device-delete:
+    delete:
+      summary: Удаление устройства
+      security:
+        - BearerAuth: []
+      tags:
+        - device manager
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceToken:
+                 type: string
+                 format: uuid
+                 example: 123e4567-e89b-12d3-a456-426614174000
+              required:
+                - deviceToken
+      responses:
+        '200':
+          description: устройство удалено
+        '500': 
+          $ref: '#/components/responses/InternalServerError'
+        '401':
+          $ref: '#/components/responses/UnAuthorized'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Ошибка сервиса"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-05-01T13:45:30Z"
+      required:
+        - message
+    DeviceTokenResponse:
+      type: object
+      properties:
+        deviceToken:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000         
+  responses:
+    DeviceRegistered:
+      description: Устройство зарегистрировано
+      content:
+        application/json:
+          schema: 
+            $ref: '#/components/schemas/DeviceTokenResponse'
+    DeviceAuthorized:
+      description: Устройство авторизовано
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnAuthorized:
+      description: Неавторизованый запрос
+  securitySchemes:
+    BearerAuth:
+      description: JWT токен клиента
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
